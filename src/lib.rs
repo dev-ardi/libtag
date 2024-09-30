@@ -5,9 +5,13 @@ mod schema;
 
 // Required for dsync for some reason
 pub use diesel;
-use diesel::{Connection as _, SqliteConnection};
+use diesel::{Connection, SqliteConnection};
 use eyre::Context;
-use models::files::{CreateFiles, Files};
+use models::{
+    files::{CreateFiles, Files},
+    tag_file::{CreateTagFile, TagFile},
+    tags::{self, CreateTags, TagId, Tags},
+};
 
 use std::{
     collections::HashSet,
@@ -101,7 +105,7 @@ fn walkdir_full_scan(dir: &impl AsRef<Path>, tx: Sender<Entry>, paths: HashSet<S
     }
 }
 
-pub fn do_load(dir: impl Into<PathBuf>) {
+pub fn scan_directory(dir: impl Into<PathBuf>) {
     let dir = dir.into();
     let (tx, rx) = channel();
 
@@ -135,4 +139,32 @@ pub fn do_load(dir: impl Into<PathBuf>) {
             }
         }
     }
+}
+
+pub fn create_tag(
+    name: &str,
+    description: Option<&str>,
+    parent: Option<i32>,
+    db: &mut SqliteConnection,
+) -> eyre::Result<i32> {
+    Tags::create(
+        db,
+        &CreateTags {
+            parent,
+            name,
+            description,
+        },
+    )
+    .context("Database error creating tag")
+}
+
+pub fn tag_file(file: i32, tag: i32, db: &mut SqliteConnection) -> eyre::Result<()> {
+    TagFile::create(
+        db,
+        &CreateTagFile {
+            label_id: file,
+            tag_id: tag,
+        },
+    )
+    .context("Database error while tagging file")
 }

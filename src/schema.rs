@@ -32,7 +32,7 @@ diesel::table! {
 diesel::table! {
     tags (id) {
         id -> Integer,
-        parent -> Integer,
+        parent -> Nullable<Integer>,
         name -> Text,
         description -> Nullable<Text>,
         created_at -> Nullable<BigInt>,

@@ -6,6 +6,8 @@ use crate::schema::*;
 
 pub type ConnectionType = diesel::sqlite::SqliteConnection;
 
+pub struct TagId(pub i32);
+
 /// Struct representing a row in table `tags`
 #[derive(
     Debug,
@@ -22,7 +24,7 @@ pub struct Tags {
     /// Field representing column `id`
     pub id: i32,
     /// Field representing column `parent`
-    pub parent: i32,
+    pub parent: Option<i32>,
     /// Field representing column `name`
     pub name: String,
     /// Field representing column `description`
@@ -36,17 +38,13 @@ pub struct Tags {
 /// Create Struct for a row in table `tags` for [`Tags`]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=tags)]
-pub struct CreateTags {
+pub struct CreateTags<'a> {
     /// Field representing column `parent`
-    pub parent: i32,
+    pub parent: Option<i32>,
     /// Field representing column `name`
-    pub name: String,
+    pub name: &'a str,
     /// Field representing column `description`
-    pub description: Option<String>,
-    /// Field representing column `created_at`
-    pub created_at: Option<i64>,
-    /// Field representing column `updated_at`
-    pub updated_at: Option<i64>,
+    pub description: Option<&'a str>,
 }
 
 /// Update Struct for a row in table `tags` for [`Tags`]
@@ -84,12 +82,13 @@ pub struct PaginationResult<T> {
 
 impl Tags {
     /// Insert a new row into `tags` with a given [`CreateTags`]
-    pub fn create(db: &mut ConnectionType, item: &CreateTags) -> diesel::QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateTags) -> diesel::QueryResult<i32> {
         use crate::schema::tags::dsl::*;
 
         diesel::insert_into(tags)
             .values(item)
-            .get_result::<Self>(db)
+            .returning(id)
+            .get_result::<i32>(db)
     }
 
     pub fn insert(db: &mut ConnectionType, item: &CreateTags) -> diesel::QueryResult<usize> {

@@ -36,12 +36,10 @@ pub struct TagFile {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=tag_file)]
 pub struct CreateTagFile {
-    /// Field representing column `label_id`
+    /// TODO: rename this lol
     pub label_id: i32,
     /// Field representing column `tag_id`
     pub tag_id: i32,
-    /// Field representing column `created_at`
-    pub created_at: Option<i64>,
 }
 
 /// Update Struct for a row in table `tag_file` for [`TagFile`]
@@ -75,12 +73,11 @@ pub struct PaginationResult<T> {
 
 impl TagFile {
     /// Insert a new row into `tag_file` with a given [`CreateTagFile`]
-    pub fn create(db: &mut ConnectionType, item: &CreateTagFile) -> diesel::QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateTagFile) -> diesel::QueryResult<()> {
         use crate::schema::tag_file::dsl::*;
 
-        diesel::insert_into(tag_file)
-            .values(item)
-            .get_result::<Self>(db)
+        diesel::insert_into(tag_file).values(item).execute(db)?;
+        Ok(())
     }
 
     pub fn insert(db: &mut ConnectionType, item: &CreateTagFile) -> diesel::QueryResult<usize> {

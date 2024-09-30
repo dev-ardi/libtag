@@ -25,7 +25,7 @@ CREATE INDEX idx_files_path ON files(path);
 
 CREATE TABLE tags (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    parent INTEGER NOT NULL,
+    parent INTEGER,
     name TEXT NOT NULL,
     description TEXT,
     created_at INT8 DEFAULT CURRENT_TIMESTAMP,
